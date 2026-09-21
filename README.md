@@ -27,13 +27,6 @@
 - Enforced domain rules in the UI: task requires a project and a project member as assignee; task duration must fit the project window; project only finishes with 100% of tasks done
 - Friendly handling of constraint violations (no raw stack traces on screen)
 
-## Screenshots
-
-> Add two screenshots under `docs/` to complete this section.
-
-![Tasks tab](docs/screenshot-tasks.png)
-![Projects tab](docs/screenshot-projects.png)
-
 ## Tech Stack
 
 | Layer    | Technologies |
@@ -151,7 +144,6 @@ curl -X POST 'http://localhost:8080/members' -H 'x-api-key: thekey' \
 │   └── src/              # tabs, filters, domain-rule enforcement
 ├── Dockerfile            # multi-stage API image (Temurin 21)
 ├── docker-compose.yml    # MySQL + MongoDB for local dev
-└── docs/                 # screenshots (add yours here)
 ```
 
 ## Roadmap
