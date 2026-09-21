@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 
 import static com.java360.pmanager.infrastructure.controller.RestConstants.PATH_PROJECTS;
 
@@ -34,6 +35,14 @@ public class ProjectRestResource {
     public ResponseEntity<ProjectDTO> loadProject(@PathVariable("id") String projectId) {
         Project project = projectService.loadProject(projectId);
         return ResponseEntity.ok(ProjectDTO.create(project));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ProjectDTO>> findProjects() {
+        List<Project> projects = projectService.findProjects();
+        return ResponseEntity.ok(
+                projects.stream().map(ProjectDTO::create).toList()
+        );
     }
 
     @DeleteMapping("/{id}")

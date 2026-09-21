@@ -61,6 +61,10 @@ public class ProjectService {
                 .orElseThrow(() -> new ProjectNotFoundException(projectId));
     }
 
+    public List<Project> findProjects() {
+        return projectRepository.findAll();
+    }
+
     @Transactional
     public void deleteProject(String projectId) {
         Project project = loadProject(projectId);
