@@ -5,9 +5,9 @@ server:
 spring:
   data:
     mongodb:
-      host: localhost
-      port: 27017
-      database: pmanagerdb
+      host: ${SPRING_DATA_MONGODB_HOST:localhost}
+      port: ${SPRING_DATA_MONGODB_PORT:27017}
+      database: ${SPRING_DATA_MONGODB_DATABASE:pmanagerdb}
   jackson:
     default-property-inclusion: non_null
   application:
@@ -17,10 +17,10 @@ spring:
 #    driverClassName: org.h2.Driver
 #    username: sa
 #    password:
-    url: jdbc:mysql://localhost:3306/pmanagerdb
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/pmanagerdb}
     driverClassName: com.mysql.cj.jdbc.Driver
-    username: root
-    password: root
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
 #  h2:
 #    console:
 #      enabled: true
@@ -32,5 +32,7 @@ app:
   general:
     pageSize: 3
   security:
-    masterApiKey: thekey
+    masterApiKey: ${APP_SECURITY_MASTER_API_KEY:thekey}
     expirationDays: 2
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
