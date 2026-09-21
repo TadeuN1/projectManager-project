@@ -1,118 +1,167 @@
-# Project Management System
+# PManager — Fullstack Project Management System
 
-PManager is a backend application for a project management system, developed as a hands-on learning project to practice and solidify core backend development concepts. It provides a RESTful API for managing projects, tasks, and members, with a focus on clean architecture and best practices.
-<br>
+![Java 21](https://img.shields.io/badge/Java-21-blue)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.0-green)
+![React](https://img.shields.io/badge/React-18-61dafb)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![Docker](https://img.shields.io/badge/Docker-ready-blue)
+![License MIT](https://img.shields.io/badge/License-MIT-yellow)
 
-##  Features
+> Fullstack system for managing projects, tasks and team members: REST API in Java 21 + Spring Boot (MySQL + MongoDB) with a React + TypeScript web client. API Key authentication, task filtering with pagination, and Docker-ready local stack.
 
-*   **Project Management**: Full CRUD (Create, Read, Update, Delete) operations for projects.
-*   **Task Management**: Full CRUD operations for tasks, including assignment to members and association with projects.
-*   **Member Management**: CRUD operations for team members who can be assigned to projects.
-*   **API Key Authentication**: Secure endpoints using a custom API key authentication mechanism.
-*   **API Key Lifecycle**: Endpoints to create and revoke API keys.
-*   **Advanced Filtering & Pagination**: Search and filter tasks by project, member, status, or title with paginated results.
-*   **Data Validation**: Robust validation on incoming request data to ensure data integrity.
-*   **Dual-Database Architecture**: Utilizes MySQL for relational data (projects, tasks, members) and MongoDB for document-based data (API keys).
+## Features
+
+**Backend**
+- Full CRUD for projects, tasks and members
+- N-N links: members ↔ projects, tasks → project + assignee
+- Task lifecycle `PENDING → IN_PROGRESS → FINISHED`; project progress derived from its tasks
+- API Key authentication (custom Spring Security filter, keys stored in MongoDB)
+- Task filtering by project, member, status, partial title + paginated results
+- Bean validation with global exception handling
+- Dual-database: MySQL (relational data via JPA/Hibernate) + MongoDB (API keys)
+
+**Frontend (`/frontend`)**
+- Tabs for Tasks, Projects and Members consuming the real API (`x-api-key` header)
+- Create / edit / delete on all three resources
+- Task filters (status, project, title search) + pagination controls
+- Enforced domain rules in the UI: task requires a project and a project member as assignee; task duration must fit the project window; project only finishes with 100% of tasks done
+- Friendly handling of constraint violations (no raw stack traces on screen)
+
+## Screenshots
+
+> Add two screenshots under `docs/` to complete this section.
+
+![Tasks tab](docs/screenshot-tasks.png)
+![Projects tab](docs/screenshot-projects.png)
 
 ## Tech Stack
 
-*   **Framework**: Spring Boot
-*   **Language**: Java 21
-*   **Build Tool**: Maven
-*   **Databases**:
-    *   MySQL (for core application data via Spring Data JPA)
-    *   MongoDB (for storing API keys via Spring Data MongoDB)
-*   **API & Web**: Spring Web (for REST controllers)
-*   **Security**: Spring Security (for custom API key authentication)
-*   **Utilities**: Lombok
+| Layer    | Technologies |
+| -------- | ------------ |
+| Backend  | Java 21, Spring Boot 4, Spring Web MVC, Spring Data JPA/Hibernate, Spring Data MongoDB, Spring Security, Spring Validation, Lombok, Maven |
+| Frontend | React 18, TypeScript, Vite, CSS, Fetch API |
+| Data     | MySQL 8 (projects, tasks, members), MongoDB (API keys) |
+| Infra    | Docker + Docker Compose, Vercel-ready frontend |
 
 ## Architecture
 
-The application is structured using a layered architecture to separate concerns and improve maintainability:
-
--   **Domain Layer**: Contains the core business logic, including entities (`Project`, `Task`, `Member`), documents (`ApiKey`), repositories, and application services that orchestrate the business rules.
--   **Infrastructure Layer**: Handles all technical concerns, including:
-    -   `controller`: Exposes the REST API endpoints.
-    -   `dto`: Data Transfer Objects for API requests and responses.
-    -   `security`: Implements the API key authentication filter and service.
-    -   `config`: Application and security configuration.
-    -   `exception`: Global exception handling for creating consistent error responses.
+```
+browser (React/Vite :5173)
+   │  REST + x-api-key, CORS enabled
+   ▼
+API (Spring Boot :8080)
+   ├── controller / dto / security / config / exception (infrastructure)
+   └── entities / services / repositories (domain)
+   ├── MySQL :3306  → projects, tasks, members
+   └── MongoDB :27017 → api_keys
+```
 
 ## Getting Started
 
 ### Prerequisites
 
-*   Java 21 or later
-*   Maven
-*   MySQL Server
-*   MongoDB Server
+- Java 21 or later (Maven wrapper included, no Maven install needed)
+- Node 18+ and npm (for the frontend)
+- MySQL 8 and MongoDB — locally **or** via Docker Compose
 
-### Installation & Setup
+### 1. Clone
 
-1.  **Clone the repository:**
-    ```sh
-    git clone https://github.com/tadeun1/projectmanager-project.git
-    cd projectmanager-project
-    ```
+```sh
+git clone https://github.com/TadeuN1/projectManager-project.git
+cd projectManager-project
+```
 
-2.  **Configure the application:**
-    Open `src/main/resources/application.yml` and update the database connection details for both MongoDB and MySQL.
+### 2. Databases (pick one)
 
-    ```yaml
-    spring:
-      data:
-        mongodb:
-          host: localhost
-          port: 27017
-          database: pmanagerdb
-      datasource:
-        url: jdbc:mysql://localhost:3306/pmanagerdb
-        username: your-mysql-username
-        password: your-mysql-password
-    app:
-      security:
-        masterApiKey: thekey # You can change the master API key here
-    ```
+With Docker (recommended):
 
-3.  **Run the application:**
-    ```sh
-    ./mvnw spring-boot:run
-    ```
-    The application will start on `http://localhost:8080`.
+```sh
+docker compose up -d
+```
+
+Or use your local MySQL/MongoDB and adjust `src/main/resources/application.yml`:
+
+```yaml
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: pmanagerdb
+  datasource:
+    url: jdbc:mysql://localhost:3306/pmanagerdb
+    username: your-mysql-username
+    password: your-mysql-password
+app:
+  security:
+    masterApiKey: thekey # change me
+```
+
+### 3. Run the API
+
+```sh
+./mvnw spring-boot:run        # Windows: .\mvnw.cmd spring-boot:run
+```
+
+API at `http://localhost:8080`. Run tests with `./mvnw test`.
+
+### 4. Run the frontend
+
+```sh
+cd frontend
+npm install
+npm run dev
+```
+
+App at `http://localhost:5173`. Optional `.env`:
+
+```sh
+VITE_API_URL=http://localhost:8080
+VITE_API_KEY=thekey
+```
 
 ## API Usage
 
-All API requests must be authenticated using an API key provided in the `x-api-key` header.
+All requests need the `x-api-key` header (master key from `application.yml`, default `thekey`, or a key created via the API).
 
-### Authentication
-
-You can use the master API key defined in `application.yml` (default: `thekey`) or generate new API keys via the API.
-
-**Example Request:**
 ```sh
-curl -X GET 'http://localhost:8080/projects' \
--H 'x-api-key: thekey'
+curl 'http://localhost:8080/projects' -H 'x-api-key: thekey'
+
+curl 'http://localhost:8080/tasks?status=PENDING&page=0' -H 'x-api-key: thekey'
+
+curl -X POST 'http://localhost:8080/members' -H 'x-api-key: thekey' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Ada","email":"ada@example.com"}'
 ```
 
-### API Endpoints
+| Resource | Base path | Notes |
+| -------- | --------- | ----- |
+| Projects | `/projects` | Full CRUD + list all |
+| Members  | `/members` | Full CRUD + filter by `email` |
+| Tasks    | `/tasks` | Full CRUD + filters (`projectId`, `memberId`, `status`, `partialTitle`, `page`, `direction`, `sort`) |
+| API Keys | `/apiKeys` | Create and revoke keys |
 
-The following are the primary resources exposed by the API:
+## Project Structure
 
-| Resource        | Base Path         | Description                                     |
-| --------------- | ----------------- | ----------------------------------------------- |
-| Projects        | `/projects`       | Manage projects.                                |
-| Members         | `/members`        | Manage team members.                            |
-| Tasks           | `/tasks`          | Manage tasks. Supports filtering and pagination.|
-| API Keys        | `/apiKeys`        | Generate and revoke API keys.                   |
+```
+.
+├── src/                  # Spring Boot API (domain + infrastructure layers)
+├── frontend/             # React + TypeScript web client
+│   ├── src/api/          # typed API client (x-api-key)
+│   └── src/              # tabs, filters, domain-rule enforcement
+├── Dockerfile            # multi-stage API image (Temurin 21)
+├── docker-compose.yml    # MySQL + MongoDB for local dev
+└── docs/                 # screenshots (add yours here)
+```
 
-#### Task Filtering
+## Roadmap
 
-The `/tasks` endpoint supports the following query parameters for filtering and pagination:
+- [x] Fullstack CRUD with N-N links
+- [x] UI domain rules (assignee, window, finish gate, pagination)
+- [ ] Public demo (API on Render/Railway, frontend on Vercel)
+- [ ] CI with GitHub Actions
+- [ ] More backend tests
 
-*   `projectId`: Filter tasks by project ID.
-*   `memberId`: Filter tasks by the assigned member's ID.
-*   `status`: Filter by task status (`PENDING`, `IN_PROGRESS`, `FINISHED`).
-*   `partialTitle`: Search for tasks with a matching title.
-*   `page`: The page number for pagination (0-indexed).
-*   `direction`: Sort direction (`ASC` or `DESC`).
-*   `sort`: Comma-separated list of properties to sort by (e.g., `title,status`).
+## License
+
+MIT — see [LICENSE](LICENSE).
